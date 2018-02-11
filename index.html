@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<input id="url" style="width: 400px;margin-bottom: 30px;" type="text" placeholder="请输入网址"/>
+<br/>
+<input id="start" style="width: 400px;margin-bottom: 30px;" type="text" placeholder="请输入起点内容"/>
+<br/>
+<input id="end" style="width: 400px;margin-bottom: 30px;" type="text" placeholder="请输入结束点内容"/>
+<br/>
+<input id="charset" style="width: 400px;margin-bottom: 30px;" type="text" placeholder="请输入原页面字符编码"/>
+
+<button id="submit" style="margin-left: 30px">确定</button>
+<div>
+    <textarea rows="10" cols="80" id="source">
+app_type:admin
+user_id:1
+nation:中国
+province:河北省
+province_index:hb
+province_abbr:冀
+province_brief:河北
+city:其它
+county:辛集市
+    </textarea>
+</div>
+<script src="jquery-1.7.1.min.js"></script>
+<script type="text/javascript">
+    $(function(){
+        $('#submit').on('click',function(){
+           // var url = document.getElementById("url").value; //获取目标地址信息
+//地址为空时提示用户输入
+            var src = $('#url').val();
+            var start = $('#start').val();
+            var end = $('#end').val();
+            var charset = $('#charset').val();
+
+            if (src == "") {
+                alert("请输入网页地址。");
+                return;
+            }
+            if(start.trim() == ''){
+                start = "<tr class='countytr'><td><a";
+            }
+            if(end.trim() == ''){
+                end = '</table';
+            }
+            if(charset.trim() == ''){
+                charset = 'gb2312';
+            }
+
+            $.ajax({
+                url:"https://api.517ybang.com/tool/curl",
+                type:'POST',
+                dataType:'json',
+                async:false,
+                data:{
+                    client_type:'client',
+                    url:src,
+                    charset:charset,
+                    start_html:start,
+                    end_html:end
+                },
+                success:function(result){
+                    //console.log(result);
+                    var str = result.content;
+                    var regex = /<a.*?>(.*?)<\/a>/ig;
+                    var result;
+                    var arr = [];
+                    while((result= regex.exec(str))!=null)
+                        arr.push(result[1]);
+
+
+                    console.log(arr);
+
+                    var arr1 = [];
+                    for(var i = 0; i < arr.length; i++){
+                        if((i%2) !== 0){
+                            arr1.push(arr[i])
+                        }
+                    }
+//console.log(alist);
+                    //console.log(arr1.join(','));
+                    $('#source').val($('#source').val().trim() +','+ arr1.join(','));
+                },
+                error:function(res){
+                    console.log(res);
+                }
+            });
+
+        });
+    })
+</script>
+</body>
+</html>
